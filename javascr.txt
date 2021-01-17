@@ -1,0 +1,129 @@
+$(document).ready(() => {
+  var arr = new Array();
+
+  $.ajax({
+    type: "GET",
+    url: "http://localhost:3000/user",
+
+    success: function (data) {
+      arr = JSON.parse(data);
+    },
+
+    error: function (errorMessage) {
+      console.log("error" + errorMessage);
+    },
+    dataType: "text",
+    contentType: "application/json",
+  });
+
+  //password checking
+  $("#pass,#cpass").on("keyup", function () {
+    if ($("#pass").val() === $("#cpass").val()) {
+      $("#out").html("Matching");
+      $("#out").css("color", "green");
+      $("#but").removeAttr("disabled");
+    } else {
+      $("#out").html("Not Matching");
+      $("#out").css("color", "red");
+      $("#but").attr("disabled", "true");
+    }
+  });
+
+  //registration form submission
+  $("#register").submit((a) => {
+    a.preventDefault();
+    let name = $("#name").val();
+    let email = $("#email").val();
+    let password = $("#pass").val();
+
+    let phone = $("#phone").val();
+
+    var user = {
+      name: name,
+      email: email,
+      password: password,
+      phone: phone,
+      category: "{}",
+    };
+
+    $.ajax({
+      type: "POST",
+      url: "http://localhost:3000/user",
+      data: JSON.stringify(user),
+      success: function () {
+        window.location.replace("../../index.html");
+      },
+
+      error: function (errorMessage) {
+        console.log("error" + errorMessage);
+      },
+      dataType: "text",
+      contentType: "application/json",
+    });
+  });
+
+  //login form submission
+  $("#login").submit((a) => {
+    a.preventDefault();
+    let email = $("#email1").val();
+    let password = $("#pass1").val();
+    if ((email == "" && password == "") || email == "" || password == "") {
+      alert("name and password is incorrect");
+    } else {
+      $.ajax({
+        type: "GET",
+        url: "http://localhost:3000/user",
+        data: { email: email, password: password },
+        success: function (data) {
+          console.log(data);
+          if (data !== "[]") {
+            window.location.replace("user_dashboard.html");
+            sessionStorage.setItem("email", email);
+          } else {
+            $(".text-muted").html("Wrong Email Id or Password");
+            $(".text-muted").css("color", "red");
+            alert("error");
+          }
+        },
+
+        error: function (errorMessage) {
+          console.log("error" + errorMessage);
+        },
+        dataType: "text",
+        contentType: "application/json",
+      });
+    }
+  });
+
+  $("#email").on("keyup", function () {
+    var email = $("#email").val();
+    console.log(email);
+    var flag = 0;
+    for (var i = 0; i < arr.length; i++) {
+      if (email == arr[i].email) {
+        $("#inval").html("Already registered user");
+        $("#inval").css("color", "red");
+        $("#but").attr("disabled", "true");
+        flag = 1;
+        break;
+      }
+    }
+    if (flag == 0) {
+      $("#but").removeAttr("disabled");
+      $("#inval").html("Email Is Available");
+      $("#inval").css("color", "green");
+    }
+    if (email == "") {
+      $("#but").attr("disabled", "true");
+      $("#inval").html("Please Enter Email");
+      $("#inval").css("color", "red");
+    }
+  });
+});
+
+function logout() {
+  if (sessionStorage.getItem("email") !== null) {
+    sessionStorage.removeItem("email");
+    location.href = "/index.html";
+  }
+}
